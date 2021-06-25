@@ -38,6 +38,19 @@
               <!-- Conteudo recebido por JSON-->
             </tbody>
           </table>
+
+          <nav aria-label="Navegação de página exemplo">
+            <ul class="pagination justify-content-end">
+              <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" onclick="mainRetroceder()" id="btnAnterior">Anterior</a>
+              </li>
+              <li class="page-item disabled"><a class="page-link" id="btnPagina">1...</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#" onclick="mainAvancar(1)" id="btnProximo">Próximo</a>
+              </li>
+            </ul>
+          </nav>
+
         </div>
         <div class="col">
         </div>

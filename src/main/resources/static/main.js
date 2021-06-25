@@ -1,6 +1,6 @@
-function fazGet(url){
+function fazGet(url,pagina){
     let request = new XMLHttpRequest();
-    request.open("GET", url, false);
+    request.open("GET", url+"?page="+pagina+"&size=10", false);
     request.send();
     return request;
 }
@@ -19,6 +19,43 @@ function fazPut(url, body){
     request.setRequestHeader("Content-type","application/json");
     request.send(JSON.stringify(body));
     return request;
+}
+
+function refazerTabela(){
+
+    let tabela = document.getElementById("tabelaUniversidades");
+    let tHead = document.createElement("thead");
+    tHead.classList ="thead-dark";
+
+    let linhaCabecalho = document.createElement("tr");
+    let thCodigo = document.createElement("th");
+    let thNome = document.createElement("th");
+    let thSigla = document.createElement("th");
+    let thAcao = document.createElement("th");
+
+    thCodigo.setAttribute("scope","col");
+    thCodigo.classList = "text-center";
+    thCodigo.textContent = "Código";
+    linhaCabecalho.appendChild(thCodigo)
+    
+    thNome.setAttribute("scope","col");
+    thNome.classList = "text-center";
+    thNome.textContent = "Nome";
+    linhaCabecalho.appendChild(thNome);
+
+    thSigla.setAttribute("scope","col");
+    thSigla.classList = "text-center";
+    thSigla.textContent = "Sigla";
+    linhaCabecalho.appendChild(thSigla);
+
+    thAcao.setAttribute("scope","col");
+    thAcao.classList = "text-center";
+    thAcao.textContent = "Ação";
+    linhaCabecalho.appendChild(thAcao);
+
+    tHead.appendChild(linhaCabecalho);
+
+    tabela.appendChild(tHead);
 }
 
 function criarLinha(usuario){
@@ -77,17 +114,90 @@ function criarLinha(usuario){
     return linha;
 }
 
-function main(){
-    let data = fazGet("http://localhost:8080/universidades").responseText;
+function main(pagina){
+    let data = fazGet("http://localhost:8080/universidades",pagina).responseText;
     let usuarios = JSON.parse(data);
 
     let tabela = document.getElementById("tabelaUniversidades");
 
-    usuarios.forEach(usuario => {
+    let proximo = document.getElementById("btnProximo");
+    usuarios.last == false ? proximo.parentNode.classList = "page-item" : proximo.parentNode.classList = "page-item disabled";
+
+
+
+
+    //******************************************************************************** Método para remover as linhas da tabela para buscar a outra página */
+    while(tabela.hasChildNodes()){
+        tabela.removeChild(tabela.lastChild);
+    }
+
+    refazerTabela();
+    
+
+    usuarios.content.forEach(usuario => {
         let linha = criarLinha(usuario);
         tabela.appendChild(linha);
     });
 };
+
+function mainAvancar(pagina){
+    let data = fazGet("http://localhost:8080/universidades",pagina).responseText;
+    let usuarios = JSON.parse(data);
+
+    let tabela = document.getElementById("tabelaUniversidades");
+    let anterior = document.getElementById("btnAnterior");
+    let proximo = document.getElementById("btnProximo");
+    let btnpagina = document.getElementById("btnPagina");
+
+    usuarios.first == false ? anterior.parentNode.classList = "page-item" : anterior.parentNode.classList = "page-item disabled";
+    usuarios.last == false ? proximo.parentNode.classList = "page-item" : proximo.parentNode.classList = "page-item disabled";
+
+    anterior.setAttribute("onclick","mainAvancar("+(pagina - 1)+")")
+    proximo.setAttribute("onclick","mainAvancar("+(++pagina)+")")
+    btnpagina.innerText = (usuarios.first == true) ? ((usuarios.last == true) ? (pagina) : ((pagina)+"...")): (usuarios.last == true) ?("..."+(pagina)) : ("..."+(pagina)+"...") ;
+
+
+    //******************************************************************************** Método para remover as linhas da tabela para buscar a outra página */
+    while(tabela.hasChildNodes()){
+        tabela.removeChild(tabela.firstChild);
+    }
+    refazerTabela();
+
+    usuarios.content.forEach(usuario => {
+        let linha = criarLinha(usuario);
+        tabela.appendChild(linha);
+    });
+};
+
+function mainRetroceder(pagina){
+    let data = fazGet("http://localhost:8080/universidades",pagina).responseText;
+    let usuarios = JSON.parse(data);
+
+    let tabela = document.getElementById("tabelaUniversidades");
+    let anterior = document.getElementById("btnAnterior");
+    let proximo = document.getElementById("btnProximo");
+    let btnpagina = document.getElementById("btnPagina");
+
+    usuarios.first == false ? anterior.parentNode.classList = "page-item" : anterior.parentNode.classList = "page-item disabled";
+    usuarios.last == false ? proximo.parentNode.classList = "page-item" : proximo.parentNode.classList = "page-item disabled";
+
+    anterior.setAttribute("onclick","mainAvancar("+(pagina - 1)+")")
+    proximo.setAttribute("onclick","mainAvancar("+(++pagina)+")")
+    btnpagina.innerText = (usuarios.first == true) ? ((usuarios.last == true) ? (pagina) : ((pagina)+"...")): (usuarios.last == true) ?("..."+(pagina)) : ("..."+(pagina)+"...") ;
+
+    //******************************************************************************** Método para remover as linhas da tabela para buscar a outra página */
+    while(tabela.hasChildNodes()){
+        tabela.removeChild(tabela.firstChild);
+    }
+    refazerTabela();
+
+    usuarios.content.forEach(usuario => {
+        let linha = criarLinha(usuario);
+        tabela.appendChild(linha);
+    });
+};
+
+
 
 
 function cadastrarUniversidade(){

@@ -3,8 +3,14 @@ package com.dpm.gestaoDeCursos.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,14 +33,28 @@ public class InstituicaoController {
 	
 	@Autowired
 	private InstituicaoRepository instituicaoRepository;
+	
+	@Autowired
+	EntityManager em;
 
 	@GetMapping
-	public ResponseEntity<?> consultarTodas(){
-		List<Instituicao> universidades = instituicaoRepository.findAll();
-		if(universidades.isEmpty()) {
+	public ResponseEntity<?> consultarTodas(Pageable pageable){
+		TypedQuery<Instituicao> universidades =  em.createQuery("select v from Instituicao v",Instituicao.class);
+		Long universidadesTotal = instituicaoRepository.count();
+		if(universidades.getResultList().isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-		}
-		return ResponseEntity.ok(universidades);
+		}	
+		
+		int paginaAtual = pageable.getPageNumber();
+		int totalRegistrosPorPagina = pageable.getPageSize();
+		int primeiroRegistroDaPagina = paginaAtual * totalRegistrosPorPagina;
+		
+		universidades.setFirstResult(primeiroRegistroDaPagina);
+		universidades.setMaxResults(totalRegistrosPorPagina);
+		
+		PageImpl<?> universidadesRetorno = new PageImpl<>(universidades.getResultList(), pageable, universidadesTotal);
+		
+		return ResponseEntity.ok(universidadesRetorno);
 	}
 	
 	@PostMapping
